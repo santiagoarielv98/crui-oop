@@ -29,6 +29,10 @@ class Tarea {
     public void completar() {
         this.completada = true;
     }
+
+    public void descompletar() {
+        this.completada = false;
+    }
 }
 
 // Problema: la lógica de gestión de tareas puede volverse compleja
@@ -63,6 +67,7 @@ class ComplexTareaManager {
 // La interfaz Command define un método común para todos los comandos
 interface Comando {
     void ejecutar();
+    void deshacer();
 }
 
 // Podemos tener diferentes comandos para diferentes operaciones
@@ -84,6 +89,12 @@ class AgregarTareaComando implements Comando {
         listaTareas.add(tarea);
         System.out.println("Tarea agregada: " + tarea.getNombre());
     }
+
+    @Override
+    public void deshacer() {
+        listaTareas.remove(tarea);
+        System.out.println("Deshacer: Tarea eliminada: " + tarea.getNombre());
+    }
 }
 
 class EliminarTareaComando implements Comando {
@@ -100,6 +111,12 @@ class EliminarTareaComando implements Comando {
         listaTareas.remove(tarea);
         System.out.println("Tarea eliminada: " + tarea.getNombre());
     }
+
+    @Override
+    public void deshacer() {
+        listaTareas.add(tarea);
+        System.out.println("Deshacer: Tarea agregada: " + tarea.getNombre());
+    }
 }
 
 class CompletarTareaComando implements Comando {
@@ -113,6 +130,12 @@ class CompletarTareaComando implements Comando {
     public void ejecutar() {
         tarea.completar();
         System.out.println("Tarea completada: " + tarea.getNombre());
+    }
+
+    @Override
+    public void deshacer() {
+        tarea.descompletar();
+        System.out.println("Deshacer: Tarea descompletada: " + tarea.getNombre());
     }
 }
 
@@ -135,6 +158,11 @@ class BuscarTareaComando implements Comando {
         }
         System.out.println("Tarea no encontrada: " + nombreTarea);
     }
+
+    @Override
+    public void deshacer() {
+        // No se puede deshacer buscar tarea, pero se implementa para cumplir con la interfaz
+    }
 }
 
 class ListarTareasComando implements Comando {
@@ -151,6 +179,12 @@ class ListarTareasComando implements Comando {
             System.out.println("- " + tarea.getNombre() + " (Completada: " + tarea.isCompletada() + ")");
         }
     }
+
+    @Override
+    public void deshacer() {
+        // No se puede deshacer listar tareas, pero se implementa para cumplir con la interfaz
+        System.out.println("Deshacer: No se puede deshacer listar tareas.");
+    }
 }
 
 // Invocador
@@ -163,7 +197,14 @@ class TareaManager {
         historialComandos.add(comando);
     }
 
-    // Podríamos agregar métodos para deshacer comandos, rehacer comandos, etc.
+
+    public void deshacerComando() {
+        if (!historialComandos.isEmpty()) {
+            Comando comando = historialComandos.remove(historialComandos.size() - 1);
+            comando.deshacer();
+        }
+    }
+
 }
 
 public class PatronCommandEjemplo {
@@ -181,15 +222,26 @@ public class PatronCommandEjemplo {
         Comando agregarTarea1 = new AgregarTareaComando(listaTareas, tarea1);
         Comando agregarTarea2 = new AgregarTareaComando(listaTareas, tarea2);
         Comando completarTarea1 = new CompletarTareaComando(tarea1);
+        Comando completarTarea2 = new CompletarTareaComando(tarea2);
         Comando eliminarTarea = new EliminarTareaComando(listaTareas, tarea2);
         Comando buscarTarea = new BuscarTareaComando(listaTareas, "Comprar leche");
         Comando listarTareas = new ListarTareasComando(listaTareas);
 
+        System.err.println("--- Ejecutando comandos ---");
         TareaManager.executeComando(agregarTarea1);
         TareaManager.executeComando(agregarTarea2);
-        TareaManager.executeComando(completarTarea1);
-        TareaManager.executeComando(eliminarTarea);
         TareaManager.executeComando(buscarTarea);
         TareaManager.executeComando(listarTareas);
+        System.out.println("\n--- Completando y eliminando tareas ---");
+        TareaManager.executeComando(completarTarea1);
+        TareaManager.executeComando(eliminarTarea);
+        TareaManager.executeComando(listarTareas); // Listar tareas
+        System.out.println("\n--- Deshaciendo comandos ---");
+        TareaManager.deshacerComando(); // Deshacer listar tareas
+        TareaManager.deshacerComando(); // Deshacer eliminar tarea
+        TareaManager.executeComando(completarTarea2); // Intentar completar tarea eliminada
+        System.out.println("\n--- Estado final de las tareas ---");
+        TareaManager.executeComando(listarTareas);
+
     }
 }
