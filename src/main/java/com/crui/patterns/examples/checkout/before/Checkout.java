@@ -3,13 +3,22 @@ package com.crui.patterns.examples.checkout.before;
 import java.util.*;
 
 /**
- * Contestar a continuación las siguientes preguntas: - Qué patrón de diseño podés identificar en el
- * código dado? - Qué patrón de diseño podrías agregar para mejorar el código?
- *
+ * Contestar a continuación las siguientes preguntas: - 
+ * Qué patrón de diseño podés identificar en el código dado?
+ * R: Strategy para el medio de pago y Observer para los listeners de la orden
+ * Strategy se usa para abstraer los diferentes medios de pago que pueden tener distintas implementaciones
+ * Observer se usa para notificar a distintos interesados (listeners) cuando una orden es pagada
+ * 
+ * Qué patrón de diseño podrías agregar para mejorar el código?
+ * R: Decorator para los extras de la orden
+ * Actualmente los extras (envoltorio de regalo y envío express) están modelados con flags booleanos en la clase Orden
+ * pero podrian ser modelados como decoradores que envuelven la orden y agregan su costo adicional
+ * 
+ * 
  * <p>Implementar UN patrón adicional para mejorar el código.
  */
-public class Checkout {
 
+public class Checkout {
   public static void main(String[] args) {
     // Productos base
     Producto libro = new Producto("Clean Code", 25.0);
@@ -21,8 +30,10 @@ public class Checkout {
     carrito.add(mouse);
 
     Orden orden = new Orden(carrito);
-    orden.incluirEnvoltorio(true);
-    orden.incluirEnvioExpress(true);
+    // orden.incluirEnvoltorio(true);
+    // orden.incluirEnvioExpress(true);
+    orden = new OrdenConEnvoltorio(carrito);
+    orden = new OrdenConEnvioExpress(carrito);
 
     orden.addListener(new EmailListener());
     orden.addListener(new AnalyticsListener());
@@ -146,8 +157,8 @@ public class Checkout {
     public double total() {
       double total = carrito.subtotal();
       // Costo extra hardcodeado (refactor -> DECORATOR sobre Product o sobre un "PricedComponent")
-      if (envoltorioRegalo) total += 5.0;
-      if (envioExpress) total += 10.0;
+      // if (envoltorioRegalo) total += 5.0;
+      // if (envioExpress) total += 10.0;
       return total;
     }
 
@@ -176,6 +187,30 @@ public class Checkout {
 
     private void notifyPaid() {
       for (OrdenEventListener l : listeners) l.onPaid(this);
+    }
+  }
+
+  static class OrdenConEnvoltorio extends Orden {
+    public OrdenConEnvoltorio(Carrito carrito) {
+      super(carrito);
+      incluirEnvoltorio(true);
+    }
+
+    @Override
+    public double total() {
+      return super.total() + 5.0;
+    }
+  }
+
+  static class OrdenConEnvioExpress extends Orden {
+    public OrdenConEnvioExpress(Carrito carrito) {
+      super(carrito);
+      incluirEnvioExpress(true);
+    }
+
+    @Override
+    public double total() {
+      return super.total() + 10.0;
     }
   }
 
