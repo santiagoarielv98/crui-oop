@@ -8,9 +8,16 @@ import java.util.List;
  * <p>Contestar a continuación las siguientes preguntas:
  *
  * <p>- Qué patrón de diseño podés identificar en el código dado?
+ * al final en el codigo tenemos CreadorDeDoctores, 
+ * que es un Abstract Method, que expone diferentes 
+ * formormas de crear una familia de doctores segun su especialidad
+ * 
+ * y tenemos un Singreton en Database porque necesitas 
+ * una instancia de base de datos compartida para toda la aplicacion
  *
  * <p>- Qué patrones de diseño se podrían agregar para mejorar el código?
- *
+ *  se puede aplicar Decorator a la clase turno para poder modificar el precio si tener que extender el codigo
+ * 
  * <p>Implementar uno o más de estos patrones adicionales para mejorar el código.
  */
 public class TurnosMedicos {
